@@ -5,9 +5,9 @@
 // Copyright (c) 2005-2007 Kwon-il Lee (zupet@hitel.net)
 // 
 // please check Licence.txt file for licence and legal issues. 
-#include "luatinker/cjson/lua_cjson.h"
+#include "cjson/lua_cjson.h"
 #include <iostream>
-#include "luatinker/lua_tinker.h"
+#include "lua_tinker.h"
 
 
 // #if defined(_MSC_VER)

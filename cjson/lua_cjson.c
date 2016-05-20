@@ -54,8 +54,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "luatinker/cjson/strbuf.h"
-#include "luatinker/cjson/fpconv.h"
+#include "cjson/strbuf.h"
+#include "cjson/fpconv.h"
 
 #ifndef CJSON_MODNAME
 #define CJSON_MODNAME   "cjson"

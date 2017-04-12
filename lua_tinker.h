@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <typeinfo>
 #include <memory>
+#include <assert.h>
 
 namespace lua_tinker
 {
@@ -26,6 +27,8 @@ namespace lua_tinker
     //void    init_u64(lua_State *L);
 
     // string-buffer excution
+    const  char* version();
+
     void    dofile(lua_State *L, const char *filename);
     void    dostring(lua_State *L, const char* buff);
     void    dobuffer(lua_State *L, const char* buff, size_t sz);
@@ -1337,14 +1340,17 @@ RVal call(lua_State* L, const char* name, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5
         table(lua_State* L, int index);
         table(lua_State* L, const char* name);
         table(const table& input);
+      
         virtual ~table();
 
         table childTable(const char* name){
+          if (m_nil){assert(false); return nilTable();}
           table t(m_obj->m_L);
           set(name, t);
           return std::move(t);
         }
         table childTable() {
+          if (m_nil){assert(false); return nilTable();}
           table t(m_obj->m_L);
           add(t);
           return std::move(t);
@@ -1353,54 +1359,69 @@ RVal call(lua_State* L, const char* name, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5
         template<typename T>
         void set(const char* name, T object)
         {
+            if (m_nil){ assert(false); return ;}
             m_obj->set(name, object);
         }
 
         template<typename T>
         bool add(T object) {
+          if (m_nil){assert(false);  return false;}
           return m_obj->add(object);
         }
 
         bool has(const char* name) {
+          if (m_nil){ assert(false); return false;}
           return m_obj->has(name);
         }
 
         bool has(int index) {
+          if (m_nil){ assert(false); return false;}
           return m_obj->has(index);
         }
 
         template<typename T>
         T get(const char* name)
-        {
-            return m_obj->get<T>(name);
+        {    
+           if (m_nil){assert(false); return T();}
+           return m_obj->get<T>(name);
         }
 
         template<typename T>
         T get(int num)
-        {
-            return m_obj->get<T>(num);
+        {     
+          if (m_nil){ assert(false); return T();}
+          return m_obj->get<T>(num);
         }
 
         unsigned int len(){
+          if (m_nil){ assert(false); return 0;}
           return m_obj->len();
         }
 
         
         template<typename RVal, typename T1>
         RVal call(const char* name, T1 obj){
-            return m_obj->call<RVal, T1>(name, obj);
+          if(m_nil){ assert(false); return RVal(); }
+          return m_obj->call<RVal, T1>(name, obj);
         }
         template<typename RVal>
         RVal call(const char* name){
-            return m_obj->call<RVal>(name);
+          if (m_nil){ assert(false); return RVal();}
+          return m_obj->call<RVal>(name);
         }
         //table_obj*      m_obj
         std::shared_ptr<table_obj>     m_obj;
-    };
+        const bool  m_nil ;
 
+        static table nilTable(){ static table t;  return t;}
+    private:
+      // nil table
+      table();
+    };
 } // namespace lua_tinker
 
 typedef lua_tinker::table LuaTable;
 typedef lua_tinker::nil LuaNil;
+
 
 #endif //_LUA_TINKER_H_

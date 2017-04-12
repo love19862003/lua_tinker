@@ -167,6 +167,10 @@
 //     lua_setglobal(L, name);
 // }
 
+const char* lua_tinker::version(){
+  return  LUA_RELEASE;
+}
+
 /*---------------------------------------------------------------------------*/ 
 /* excution                                                                  */ 
 /*---------------------------------------------------------------------------*/ 
@@ -475,6 +479,7 @@ unsigned long long lua_tinker::read(lua_State *L, int index)
 template<>
 lua_tinker::table lua_tinker::read(lua_State *L, int index)
 {
+    //assert(lua_istable(L, index));
     return table(L, index);
 }
 template<>
@@ -619,7 +624,13 @@ void lua_tinker::push(lua_State *L, unsigned long long ret)
 template<>
 void lua_tinker::push(lua_State *L, lua_tinker::table ret)
 {
-    lua_pushvalue(L, ret.m_obj->m_index);
+    if(!ret.m_nil)
+    {
+      lua_pushvalue(L, ret.m_obj->m_index); 
+    }
+    else{ 
+      lua_pushnil(L); 
+    }
 }
 template<> 
 void lua_tinker::push(lua_State *L, nil /*ret*/){
@@ -836,16 +847,22 @@ bool lua_tinker::table_obj::validate()
 /*---------------------------------------------------------------------------*/ 
 /* Table Object Holder                                                       */ 
 /*---------------------------------------------------------------------------*/ 
-lua_tinker::table::table(lua_State* L)
+lua_tinker::table::table(lua_State* L) : m_nil(false)
 {
     lua_newtable(L);
 
     m_obj = std::make_shared<table_obj>(L, lua_gettop(L));
 
+   
+
    /* m_obj->inc_ref();*/
 }
 
-lua_tinker::table::table(lua_State* L, const char* name)
+lua_tinker::table::table() : m_nil(true){
+   m_obj = nullptr;
+}
+
+lua_tinker::table::table(lua_State* L, const char* name) : m_nil(false)
 {
     lua_getglobal(L, name);
 
@@ -860,10 +877,12 @@ lua_tinker::table::table(lua_State* L, const char* name)
 
     m_obj = std::make_shared<table_obj>(L, lua_gettop(L));
 
+ 
+
    /* m_obj->inc_ref();*/
 }
 
-lua_tinker::table::table(lua_State* L, int index)
+lua_tinker::table::table(lua_State* L, int index)   : m_nil(false)
 {
     if(index < 0)
     {
@@ -872,12 +891,15 @@ lua_tinker::table::table(lua_State* L, int index)
 
     m_obj = std::make_shared<table_obj>(L, index);
 
+    
+
    /* m_obj->inc_ref();*/
 }
 
-lua_tinker::table::table(const table& input)
+lua_tinker::table::table(const table& input) : m_nil(input.m_nil)
 {
     m_obj = input.m_obj;
+
 
     /*m_obj->inc_ref();*/
 }
